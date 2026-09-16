@@ -1,0 +1,13 @@
+{
+  "name": "Lifeengine",
+  "description": "Lifeengine - Shaxsiy samaradorlik, vazifalar va odatlar trekeri",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ],
+  "package_name": "com.lifeengine.uz",
+  "version": "1.0.0",
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

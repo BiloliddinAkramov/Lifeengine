@@ -1,0 +1,111 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile information",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "username": { "type": "string" },
+        "displayName": { "type": "string" },
+        "email": { "type": "string" },
+        "avatar": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "user"] },
+        "status": { "type": "string", "enum": ["active", "banned"] },
+        "joinedAt": { "type": "string", "format": "date-time" },
+        "lastLogin": { "type": "string", "format": "date-time" },
+        "lastActive": { "type": "string", "format": "date-time" },
+        "lastStarDeduction": { "type": "string" },
+        "stars": { "type": "number" },
+        "score": { "type": "number" },
+        "isPremium": { "type": "boolean" },
+        "isLifetime": { "type": "boolean" },
+        "isCorporate": { "type": "boolean" },
+        "corporateName": { "type": "string" },
+        "pin": { "type": "string" },
+        "country": { "type": "string" }
+      },
+      "required": ["id", "username", "role", "status"]
+    },
+    "AppState": {
+      "title": "AppState",
+      "description": "User's application state and data",
+      "type": "object",
+      "properties": {
+        "tasks": { "type": "array", "items": { "type": "object" } },
+        "habits": { "type": "array", "items": { "type": "object" } },
+        "sleep": { "type": "array", "items": { "type": "object" } },
+        "sleepHours": { "type": "array", "items": { "type": "number" } },
+        "sleepSchedules": { "type": "array", "items": { "type": "object" } },
+        "financeIncome": { "type": "array", "items": { "type": "number" } },
+        "financeExpenses": { "type": "array", "items": { "type": "number" } },
+        "language": { "type": "string" },
+        "currency": { "type": "string" },
+        "theme": { "type": "string" }
+      }
+    },
+    "SupportTicket": {
+      "title": "SupportTicket",
+      "description": "A support ticket submitted by a user",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "question": { "type": "string" },
+        "answer": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "replied"] },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "question", "status", "timestamp"]
+    },
+    "GlobalSettings": {
+      "title": "GlobalSettings",
+      "description": "Global application settings",
+      "type": "object",
+      "properties": {
+        "holiday": { "type": "string" },
+        "shopStatus": { "type": "string", "enum": ["active", "frozen"] }
+      }
+    },
+    "UserChallenge": {
+      "title": "UserChallenge",
+      "description": "Challenge requests between users",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "senderId": { "type": "string" },
+        "senderName": { "type": "string" },
+        "receiverId": { "type": "string" },
+        "receiverName": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "accepted", "rejected", "completed"] },
+        "type": { "type": "string", "enum": ["focus", "finance", "points"] },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "senderId", "receiverId", "status", "type", "timestamp"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": "User",
+      "description": "User profile documents"
+    },
+    "users/{userId}/data/state": {
+      "schema": "AppState",
+      "description": "User's private application state"
+    },
+    "tickets/{ticketId}": {
+      "schema": "SupportTicket",
+      "description": "Support tickets collection"
+    },
+    "challenges/{challengeId}": {
+      "schema": "UserChallenge",
+      "description": "Challenge requests and competitions between users"
+    },
+    "settings/global": {
+      "schema": "GlobalSettings",
+      "description": "Global app settings"
+    }
+  }
+}

@@ -1,0 +1,148 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: {userId}
+    // Fields:
+    //   - id: string (required)
+    //   - username: string (required)
+    //   - displayName: string
+    //   - avatar: string
+    //   - role: string (admin|user)
+    //   - status: string (active|banned)
+    //   - joinedAt: string (ISO date)
+    //   - lastLogin: string (ISO date)
+    //   - stars: number
+    //   - isPremium: bool
+    //   - isLifetime: bool
+    //   - pin: string
+    //   - country: string
+    //
+    // Collection: users/{userId}/data/state
+    // Document ID: state
+    // Fields:
+    //   - tasks: list
+    //   - habits: list
+    //   - sleep: list
+    //   - sleepHours: list
+    //   - sleepSchedules: list
+    //   - financeIncome: list
+    //   - financeExpenses: list
+    //   - language: string
+    //   - currency: string
+    //   - theme: string
+    //
+    // Collection: tickets
+    // Document ID: {ticketId}
+    // Fields:
+    //   - id: string
+    //   - userId: string
+    //   - userName: string
+    //   - question: string
+    //   - answer: string
+    //   - status: string (pending|replied)
+    //   - timestamp: string
+    //
+    // Collection: settings
+    // Document ID: global
+    // Fields:
+    //   - holidayTheme: string
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && 
+        (request.auth.uid == userId || (resource != null && resource.data.id == request.auth.uid));
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (request.auth.token.email == "biloliddinakramov85@gmail.com" ||
+         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'));
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['id', 'username', 'role', 'status']) &&
+             data.id is string &&
+             data.username is string && data.username.size() > 0 && data.username.size() < 50 &&
+             data.role in ['admin', 'user'] &&
+             data.status in ['active', 'banned'] &&
+             (!('displayName' in data) || (data.displayName is string && data.displayName.size() < 100)) &&
+             (!('stars' in data) || data.stars is number);
+    }
+
+    function isValidTicket(data) {
+      return data.keys().hasAll(['id', 'userId', 'question', 'status', 'timestamp']) &&
+             data.id is string &&
+             data.userId is string &&
+             data.question is string && data.question.size() > 0 && data.question.size() < 2000 &&
+             data.status in ['pending', 'replied'] &&
+             (!('answer' in data) || (data.answer is string && data.answer.size() < 2000));
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      // Allow everyone to read user profiles for leaderboard/stats
+      allow get: if true;
+      allow list: if true;
+      
+      allow create: if isAuthenticated() && isValidUser(request.resource.data) && 
+                      (((request.auth.uid == userId || request.resource.data.id == request.auth.uid) && request.resource.data.role == 'user') || isAdmin());
+      allow update: if isAuthenticated() && isValidUser(request.resource.data) && 
+                      ((isOwner(userId) && request.resource.data.role == resource.data.role) || isAdmin());
+      
+      match /data/state {
+        allow read, write: if isAuthenticated() && (request.auth.uid == userId || isOwner(userId) || isAdmin());
+      }
+    }
+
+    match /tickets/{ticketId} {
+      // Allow listing only if filter matches owner or user is admin
+      allow list: if isAuthenticated() && (request.auth.uid == resource.data.userId || isAdmin());
+      allow get: if isAuthenticated() && (request.auth.uid == resource.data.userId || isAdmin());
+      
+      allow create: if isAuthenticated() && isValidTicket(request.resource.data) && 
+                      (request.auth.uid == request.resource.data.userId || isAdmin());
+      allow update: if isAuthenticated() && isValidTicket(request.resource.data) && 
+                      ((request.auth.uid == resource.data.userId && 
+                        request.resource.data.get('answer', '') == resource.data.get('answer', '')) || isAdmin());
+    }
+
+    match /challenges/{challengeId} {
+      // Allow reading individual docs if user is a participant
+      allow get: if isAuthenticated() && (request.auth.uid == resource.data.senderId || request.auth.uid == resource.data.receiverId || isAdmin());
+      // Allow listing if query filters by participant
+      allow list: if isAuthenticated() && (request.auth.uid == resource.data.senderId || request.auth.uid == resource.data.receiverId || isAdmin());
+      
+      allow create: if isAuthenticated() && (request.auth.uid == request.resource.data.senderId || isAdmin());
+      allow update: if isAuthenticated() && (request.auth.uid == resource.data.senderId || request.auth.uid == resource.data.receiverId || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    match /settings/global {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /{path=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,144 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+:root {
+  --color-brand-dark: #0C1EAD;
+  --color-brand-medium: #123BCE;
+  --color-brand-light: #2F75EE;
+  --color-brand-accent: #31B7FC;
+  --color-brand-bg: #f8fafc;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #f1f5f9;
+  color: #0C1EAD;
+}
+
+.font-display {
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.font-mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.rounded-premium {
+  border-radius: 24px;
+}
+
+/* Glassmorphism Ochiq Panel */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(12, 30, 173, 0.08);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 63, 0.04);
+}
+
+/* Glassmorphism To'q Panel */
+.glass-dark {
+  background: rgba(0, 0, 0, 0.82);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+/* Animations */
+@keyframes logoPop {
+  0% {
+    transform: scale(0.2) rotate(-8deg);
+    opacity: 0;
+    filter: blur(10px);
+  }
+  50% {
+    opacity: 1;
+    filter: blur(0px);
+  }
+  82% {
+    transform: scale(1.08) rotate(2deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+.animate-logo-pop {
+  animation: logoPop 0.8s cubic-bezier(0.15, 0.85, 0.35, 1.05) both;
+}
+
+@keyframes topSlideDown {
+  0% {
+    transform: translateY(-30px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-top-slide-down {
+  animation: topSlideDown 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: 0.15s;
+}
+
+@keyframes circleRise {
+  0% {
+    transform: translateY(350px) scale(0.6);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-circle-rise {
+  animation: circleRise 0.8s cubic-bezier(0.15, 0.85, 0.35, 1.05) both;
+}
+
+@keyframes wrenchDrop {
+  0% {
+    transform: translateY(-350px) rotate(-45deg);
+    opacity: 0;
+  }
+  45% {
+    opacity: 0;
+  }
+  75% {
+    transform: translateY(0) rotate(15deg);
+    opacity: 1;
+  }
+  90% {
+    transform: rotate(-10deg);
+  }
+  100% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+.animate-wrench-drop {
+  animation: wrenchDrop 1s cubic-bezier(0.15, 0.85, 0.35, 1.05) both;
+}
+
+/* Hide scrollbars completely while preserving scrolling capability */
+.hide-scrollbar::-webkit-scrollbar,
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+}
+
+.hide-scrollbar,
+.no-scrollbar {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
