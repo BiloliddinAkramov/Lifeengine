@@ -31,7 +31,11 @@ export const PwaInstallModal: React.FC<PwaInstallModalProps> = ({
     setIsIOS(isIosDevice);
 
     // Check standalone
-    if (window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone) {
+    if (
+      window.matchMedia('(display-mode: standalone)').matches || 
+      (window.navigator as any).standalone ||
+      localStorage.getItem('pwa_installed') === 'true'
+    ) {
       setIsInstalled(true);
     }
   }, []);
@@ -45,6 +49,7 @@ export const PwaInstallModal: React.FC<PwaInstallModalProps> = ({
         const choiceResult = await deferredPrompt.userChoice;
         if (choiceResult?.outcome === 'accepted') {
           setIsInstalled(true);
+          localStorage.setItem('pwa_installed', 'true');
           onInstalled?.();
           onClose();
         }
@@ -53,7 +58,10 @@ export const PwaInstallModal: React.FC<PwaInstallModalProps> = ({
       }
     } else if (isInIframe) {
       // In iframe preview, open in standalone window for 1-click install
+      localStorage.setItem('pwa_installed', 'true');
       window.open(window.location.href, '_blank');
+      onInstalled?.();
+      onClose();
     }
   };
 
@@ -74,7 +82,12 @@ export const PwaInstallModal: React.FC<PwaInstallModalProps> = ({
         {/* Icon & App Info */}
         <div className="flex flex-col items-center text-center mt-2 mb-6">
           <div className="w-20 h-20 rounded-2xl bg-white shadow-xl shadow-slate-200/60 border border-slate-100 flex items-center justify-center p-2 mb-3">
-            <img src="/logo.png" alt="Life Engine" className="w-full h-full object-contain" />
+            <img 
+              src="/logo.svg" 
+              onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/logo.png'; }} 
+              alt="Life Engine" 
+              className="w-full h-full object-contain" 
+            />
           </div>
           <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
             Life Engine

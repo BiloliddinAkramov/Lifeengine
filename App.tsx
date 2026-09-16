@@ -39,6 +39,14 @@ export const App: React.FC = () => {
   // PWA and Auth State
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showInstallModal, setShowInstallModal] = useState<boolean>(false);
+  const [isInstalled, setIsInstalled] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return (
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as any).standalone === true ||
+      localStorage.getItem('pwa_installed') === 'true'
+    );
+  });
   const [showAuthModal, setShowAuthModal] = useState<boolean>(() => {
     return localStorage.getItem('life_engine_logged_in_v8') !== 'true';
   });
@@ -102,21 +110,44 @@ export const App: React.FC = () => {
   // Listen to PWA install event
   useEffect(() => {
     const handlePrompt = (e: any) => {
+      if (
+        window.matchMedia('(display-mode: standalone)').matches ||
+        (window.navigator as any).standalone === true ||
+        localStorage.getItem('pwa_installed') === 'true'
+      ) {
+        return;
+      }
       e.preventDefault();
       setDeferredPrompt(e);
     };
+
+    const handleAppInstalled = () => {
+      setIsInstalled(true);
+      localStorage.setItem('pwa_installed', 'true');
+      setDeferredPrompt(null);
+      setShowInstallModal(false);
+    };
+
     window.addEventListener('beforeinstallprompt', handlePrompt);
-    return () => window.removeEventListener('beforeinstallprompt', handlePrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handlePrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
   }, []);
 
   // 1-Click Direct Install Handler
   const handleDirectInstall = async () => {
+    if (isInstalled) return;
     if (deferredPrompt) {
       try {
         await deferredPrompt.prompt();
         const choiceResult = await deferredPrompt.userChoice;
         if (choiceResult?.outcome === 'accepted') {
           setDeferredPrompt(null);
+          setIsInstalled(true);
+          localStorage.setItem('pwa_installed', 'true');
+          setShowInstallModal(false);
           return;
         }
       } catch (err) {
@@ -365,6 +396,7 @@ export const App: React.FC = () => {
         setLang={setLang}
         globalSettings={globalSettings}
         onOpenInstallModal={handleDirectInstall}
+        isInstalled={isInstalled}
         onLogout={handleLogout}
         onOpenLogin={() => setShowAuthModal(true)}
       />
@@ -716,6 +748,10 @@ export const App: React.FC = () => {
         isOpen={showInstallModal}
         onClose={() => setShowInstallModal(false)}
         deferredPrompt={deferredPrompt}
+        onInstalled={() => {
+          setIsInstalled(true);
+          localStorage.setItem('pwa_installed', 'true');
+        }}
       />
 
       {/* Auth / Login Modal */}

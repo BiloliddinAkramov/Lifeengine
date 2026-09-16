@@ -14,6 +14,7 @@ interface SidebarProps {
   setLang: (lang: 'uz' | 'ru' | 'en') => void;
   globalSettings: GlobalSettings;
   onOpenInstallModal: () => void;
+  isInstalled?: boolean;
   onLogout?: () => void;
   onOpenLogin?: () => void;
 }
@@ -30,6 +31,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   setLang,
   globalSettings,
   onOpenInstallModal,
+  isInstalled = false,
   onLogout,
   onOpenLogin
 }) => {
@@ -80,26 +82,32 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="h-full flex flex-col p-6 overflow-y-auto hide-scrollbar">
           {/* Brand Header */}
           <div className="flex items-center gap-4 mb-8 shrink-0">
-            {globalSettings.holiday === 'none' ? (
-              <div className="w-12 h-12 rounded-2xl overflow-hidden shadow-lg shadow-slate-200/50 dark:shadow-slate-900/50 shrink-0 bg-white border border-slate-100 dark:border-slate-800 flex items-center justify-center p-1">
-                <img src="/logo.png" alt="Life Engine" className="w-full h-full object-contain" />
+            <div className="w-12 h-12 rounded-2xl overflow-hidden shadow-lg shadow-slate-200/50 dark:shadow-slate-900/50 shrink-0 bg-white border border-slate-100 dark:border-slate-800 flex items-center justify-center p-1">
+              <img 
+                src="/logo.svg" 
+                onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/logo.png'; }} 
+                alt="Life Engine" 
+                className="w-full h-full object-contain" 
+              />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5">
+                <h2 className="text-sm font-black tracking-tight uppercase dark:text-white truncate">
+                  Lifeengine
+                </h2>
+                {globalSettings.holiday !== 'none' && (
+                  <span className="text-xs text-blue-500" title={holidayInfo.title}>
+                    <i className={`fas ${holidayInfo.icon}`}></i>
+                  </span>
+                )}
               </div>
-            ) : (
-              <div className={`w-12 h-12 rounded-[1.2rem] flex items-center justify-center shadow-xl transition-colors duration-300 shrink-0 ${holidayInfo.color}`}>
-                <i className={`fas ${holidayInfo.icon} text-lg text-white`}></i>
-              </div>
-            )}
-            <div>
-              <h2 className="text-sm font-black tracking-tight uppercase dark:text-white">
-                {holidayInfo.title}
-              </h2>
-              <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest">
+              <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest block">
                 {t(lang, 'pro_edition')}
               </span>
             </div>
             <button
               onClick={toggleTheme}
-              className="ml-auto w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center active:scale-90 transition-all"
+              className="ml-auto w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center active:scale-90 transition-all shrink-0"
               title="Mavzuni o'zgartirish"
             >
               <i className={`fas ${theme === 'dark' ? 'fa-sun text-yellow-500' : 'fa-moon text-blue-500'}`}></i>
@@ -150,27 +158,34 @@ export const Sidebar: React.FC<SidebarProps> = ({
               );
             })}
 
-            {/* PWA Install Button at the end of nav items */}
-            <button
-              onClick={() => {
-                onOpenInstallModal();
-                onClose();
-              }}
-              className="w-full flex items-center gap-4 px-4 py-3 rounded-[1.4rem] transition-all group bg-gradient-to-r from-blue-600/10 to-indigo-600/10 hover:from-blue-600 hover:to-indigo-600 text-blue-600 dark:text-blue-400 hover:text-white border border-blue-500/20 hover:border-transparent shadow-sm mt-3"
-            >
-              <div className="w-8 h-8 rounded-xl bg-white border border-slate-200 dark:border-slate-700 p-0.5 flex items-center justify-center shrink-0 group-hover:scale-105 shadow-md transition-transform overflow-hidden">
-                <img src="/logo.png" alt="Life Engine" className="w-full h-full object-contain" />
-              </div>
-              <div className="flex-1 text-left">
-                <span className="text-xs font-black tracking-tight block">
-                  Ilovani O'rnatish
-                </span>
-                <span className="text-[9px] opacity-75 font-bold block">
-                  Life Engine (PWA)
-                </span>
-              </div>
-              <i className="fas fa-download text-xs opacity-70 group-hover:opacity-100 transition-opacity"></i>
-            </button>
+            {/* PWA Install Button at the end of nav items (Only shown if not already installed/downloaded) */}
+            {!isInstalled && (
+              <button
+                onClick={() => {
+                  onOpenInstallModal();
+                  onClose();
+                }}
+                className="w-full flex items-center gap-4 px-4 py-3 rounded-[1.4rem] transition-all group bg-gradient-to-r from-blue-600/10 to-indigo-600/10 hover:from-blue-600 hover:to-indigo-600 text-blue-600 dark:text-blue-400 hover:text-white border border-blue-500/20 hover:border-transparent shadow-sm mt-3"
+              >
+                <div className="w-8 h-8 rounded-xl bg-white border border-slate-200 dark:border-slate-700 p-0.5 flex items-center justify-center shrink-0 group-hover:scale-105 shadow-md transition-transform overflow-hidden">
+                  <img 
+                    src="/logo.svg" 
+                    onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/logo.png'; }} 
+                    alt="Life Engine" 
+                    className="w-full h-full object-contain" 
+                  />
+                </div>
+                <div className="flex-1 text-left">
+                  <span className="text-xs font-black tracking-tight block">
+                    Ilovani O'rnatish
+                  </span>
+                  <span className="text-[9px] opacity-75 font-bold block">
+                    Life Engine (PWA)
+                  </span>
+                </div>
+                <i className="fas fa-download text-xs opacity-70 group-hover:opacity-100 transition-opacity"></i>
+              </button>
+            )}
           </div>
 
           {/* Bottom Profile */}
