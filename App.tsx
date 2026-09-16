@@ -40,7 +40,7 @@ export const App: React.FC = () => {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showInstallModal, setShowInstallModal] = useState<boolean>(false);
   const [showAuthModal, setShowAuthModal] = useState<boolean>(() => {
-    return localStorage.getItem('life_engine_logged_in_v7') !== 'true';
+    return localStorage.getItem('life_engine_logged_in_v8') !== 'true';
   });
 
   // Global settings
@@ -70,8 +70,8 @@ export const App: React.FC = () => {
             joinedAt: fbUser.metadata?.creationTime || new Date().toISOString(),
             lastLogin: new Date().toISOString(),
             lastActive: new Date().toISOString(),
-            stars: 50,
-            score: 100,
+            stars: isAdmin ? 999 : 0,
+            score: isAdmin ? 1000 : 0,
             isPremium: isAdmin,
             isLifetime: isAdmin,
             isCorporate: false,
@@ -91,7 +91,7 @@ export const App: React.FC = () => {
           LifeEngineService.saveLocalState(cloudData.state);
         }
 
-        localStorage.setItem('life_engine_logged_in_v7', 'true');
+        localStorage.setItem('life_engine_logged_in_v8', 'true');
         setShowAuthModal(false);
       }
     });
@@ -130,11 +130,17 @@ export const App: React.FC = () => {
   const handleLogin = (loggedUser: User) => {
     setUser(loggedUser);
     LifeEngineService.saveUser(loggedUser);
-    localStorage.setItem('life_engine_logged_in_v7', 'true');
+    localStorage.setItem('life_engine_logged_in_v8', 'true');
     setShowAuthModal(false);
     if (loggedUser.role === 'admin') {
       setActiveTab('admin');
     }
+  };
+
+  const handleResetToZero = () => {
+    const clean = LifeEngineService.resetToZero();
+    setUser(clean.user);
+    setAppState(clean.state);
   };
 
   const handleLogout = async () => {
@@ -143,16 +149,20 @@ export const App: React.FC = () => {
     } catch (e) {
       console.warn('SignOut error:', e);
     }
-    localStorage.removeItem('life_engine_logged_in_v7');
+    localStorage.removeItem('life_engine_logged_in_v8');
     localStorage.removeItem('admin_unlocked');
     const freshUser: User = {
       ...DEFAULT_USER,
       id: 'user_' + Date.now().toString(36),
       role: 'user',
-      displayName: 'Foydalanuvchi'
+      displayName: 'Yangi Foydalanuvchi',
+      stars: 0,
+      score: 0
     };
     setUser(freshUser);
     LifeEngineService.saveUser(freshUser);
+    setAppState(DEFAULT_APP_STATE);
+    LifeEngineService.saveLocalState(DEFAULT_APP_STATE);
     if (activeTab === 'admin') {
       setActiveTab('tasks');
     }
@@ -576,6 +586,7 @@ export const App: React.FC = () => {
               theme={theme}
               onLogout={handleLogout}
               onOpenLogin={() => setShowAuthModal(true)}
+              onResetToZero={handleResetToZero}
             />
           )}
 

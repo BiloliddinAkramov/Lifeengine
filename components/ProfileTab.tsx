@@ -9,6 +9,7 @@ interface ProfileTabProps {
   theme: 'dark' | 'light';
   onLogout?: () => void;
   onOpenLogin?: () => void;
+  onResetToZero?: () => void;
 }
 
 export const ProfileTab: React.FC<ProfileTabProps> = ({
@@ -17,12 +18,14 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
   lang,
   theme,
   onLogout,
-  onOpenLogin
+  onOpenLogin,
+  onResetToZero
 }) => {
   const [displayName, setDisplayName] = useState<string>(user.displayName || '');
   const [pin, setPin] = useState<string>(user.pin || '');
   const [selectedAvatar, setSelectedAvatar] = useState<string>(user.avatar || '');
   const [savedMsg, setSavedMsg] = useState<boolean>(false);
+  const [resetSuccess, setResetSuccess] = useState<boolean>(false);
 
   const predefinedAvatars = [
     {
@@ -201,6 +204,33 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
             <p className="text-xs text-amber-800 dark:text-amber-300 font-bold">
               Admin paneliga kirish uchun maxsus login: <strong className="font-mono">admin</strong> / parol: <strong className="font-mono">admin777</strong>
             </p>
+          </div>
+        )}
+
+        {onResetToZero && (
+          <div className="p-4 rounded-2xl bg-rose-500/5 border border-rose-500/15 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                Barcha vazifalar va odatlarni 0 ga tushirish
+              </p>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                Yangi boshlash uchun barcha bajarilgan belgilarni va hisoblagichlarni 0% ga qaytaradi.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                if (window.confirm("Rostdan ham barcha vazifalar, odatlar va ko'rsatkichlarni 0 ga tushirmoqchimisiz?")) {
+                  onResetToZero();
+                  setResetSuccess(true);
+                  setTimeout(() => setResetSuccess(false), 3000);
+                }
+              }}
+              className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 active:scale-95 shadow-md shadow-rose-500/20 whitespace-nowrap"
+            >
+              <i className="fas fa-undo-alt"></i>
+              <span>{resetSuccess ? "0 ga tushirildi! ✅" : "0 ga tushirish"}</span>
+            </button>
           </div>
         )}
 

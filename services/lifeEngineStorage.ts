@@ -11,8 +11,8 @@ import {
 import { db, handleFirestoreError, OperationType } from '../firebase';
 import { User, AppState, SupportTicket, GlobalSettings, MatrixItem } from '../types';
 
-const STORAGE_KEY_STATE = 'life_engine_state_v7';
-const STORAGE_KEY_USER = 'life_engine_user_v7';
+const STORAGE_KEY_STATE = 'life_engine_state_v8';
+const STORAGE_KEY_USER = 'life_engine_user_v8';
 
 const pad30 = <T>(arr: T[], fill: T): T[] => {
   const result = [...arr];
@@ -22,41 +22,38 @@ const pad30 = <T>(arr: T[], fill: T): T[] => {
 
 export const DEFAULT_APP_STATE: AppState = {
   tasks: [
-    { id: "t1", name: "Deep Work (4s)", data: pad30([true, false, true, false, false, true, false, false, false, true], false) },
-    { id: "t2", name: "Kunlik reja", data: pad30([false, true, false, true, false, false, false, true, false, false, true], false) }
+    { id: "t1", name: "Kunlik vazifalar rejasi", data: Array(30).fill(false) },
+    { id: "t2", name: "Fokusli mehnat (Deep Work)", data: Array(30).fill(false) }
   ],
   habits: [
-    { id: "h1", name: "2 litr toza suv ichish", data: pad30([true, true, true, true, true, true, true], false) },
-    { id: "h2", name: "Ertalabki badantarbiya", data: pad30([true, true, false, true, true, true, false], false) },
-    { id: "h3", name: "23:00 da uyquga yotish", data: pad30([true, true, true, false, true, false, true], false) },
-    { id: "h4", name: "Ertalab 06:00 da uyg'onish", data: pad30([false, true, true, true, false, true, true], false) }
+    { id: "h1", name: "2 litr toza suv ichish", data: Array(30).fill(false) },
+    { id: "h2", name: "Ertalabki badantarbiya", data: Array(30).fill(false) },
+    { id: "h3", name: "Kitob mutolaasi (20 bet)", data: Array(30).fill(false) },
+    { id: "h4", name: "O'z vaqtida uxlash (23:00)", data: Array(30).fill(false) }
   ],
   sleep: [
-    { id: "s1", name: "23:00 da uyqu", data: pad30([true, true, true, true, false, true, true], false) }
+    { id: "s1", name: "23:00 da uyqu", data: Array(30).fill(false) }
   ],
-  sleepHours: pad30([7.5, 8.0, 7.0, 6.5, 8.0, 7.5, 7.0], 7.0),
+  sleepHours: Array(30).fill(0),
   sleepSchedules: Array.from({ length: 30 }, (_, e) => ({
     day: e + 1,
-    bedTime: "23:00",
-    wakeTime: "06:30",
-    quality: 85
+    bedTime: "--:--",
+    wakeTime: "--:--",
+    quality: 0
   })),
-  financeIncome: pad30([500000, 0, 0, 1200000, 0, 0, 0], 0),
-  financeExpenses: pad30([120000, 45000, 80000, 150000, 30000, 95000, 0], 0),
-  expenseRecords: [
-    { id: "rec1", amount: 120000, category: "Oziq-ovqat", description: "Bozorlik va supermarket", date: new Date().toISOString().split('T')[0], type: 'expense' },
-    { id: "rec2", amount: 1200000, category: "Freelance", description: "Loyiha daromadi", date: new Date().toISOString().split('T')[0], type: 'income' }
-  ],
-  steps: pad30([8500, 10200, 7400, 9100, 11500, 8900, 6500], 7000),
+  financeIncome: Array(30).fill(0),
+  financeExpenses: Array(30).fill(0),
+  expenseRecords: [],
+  steps: Array(30).fill(0),
   stepGoal: 10000,
-  water: pad30([1800, 2200, 2000, 1600, 2100, 1900, 2300], 1800),
+  water: Array(30).fill(0),
   waterGoal: 2000,
-  moods: pad30(['great', 'good', 'neutral', 'great', 'good', 'good', 'great'], 'good'),
-  weight: pad30([72.5, 72.3, 72.1, 72.0, 71.8, 71.9, 71.7], 72.0),
+  moods: Array(30).fill('neutral'),
+  weight: Array(30).fill(0),
   weightGoal: 70,
-  financeBudget: 2500000,
-  favoriteMusic: ['lofi_1', 'rain_1'],
-  historyMusic: ['lofi_1'],
+  financeBudget: 0,
+  favoriteMusic: [],
+  historyMusic: [],
   chartPreferences: { tasks: 'area', habits: 'area', sleep: 'area', finance: 'area' },
   challenges: [
     { 
@@ -64,9 +61,9 @@ export const DEFAULT_APP_STATE: AppState = {
       title: 'Kitobxonlik Chellenji', 
       description: 'Har kuni kamida 20 sahifa kitob mutolaasi qilish', 
       duration: 30, 
-      currentDay: 12, 
+      currentDay: 0, 
       targetTime: '21:00',
-      startDate: new Date(Date.now() - 12 * 86400000).toISOString().split('T')[0],
+      startDate: new Date().toISOString().split('T')[0],
       completed: false, 
       category: 'mind', 
       rewardStars: 15, 
@@ -78,9 +75,9 @@ export const DEFAULT_APP_STATE: AppState = {
       title: '06:00 Ertalabki Intizom', 
       description: 'Har tong soat 06:00 da uyg\'onish va kunni rejalashtirish', 
       duration: 21, 
-      currentDay: 14, 
+      currentDay: 0, 
       targetTime: '06:00',
-      startDate: new Date(Date.now() - 14 * 86400000).toISOString().split('T')[0],
+      startDate: new Date().toISOString().split('T')[0],
       completed: false, 
       category: 'discipline', 
       rewardStars: 20, 
@@ -92,9 +89,9 @@ export const DEFAULT_APP_STATE: AppState = {
       title: '10,000 Qadam Marafoni', 
       description: 'Kunlik kamida 10,000 qadam yurish va tetiklik', 
       duration: 30, 
-      currentDay: 9, 
+      currentDay: 0, 
       targetTime: '18:30',
-      startDate: new Date(Date.now() - 9 * 86400000).toISOString().split('T')[0],
+      startDate: new Date().toISOString().split('T')[0],
       completed: false, 
       category: 'fitness', 
       rewardStars: 12, 
@@ -108,20 +105,20 @@ export const DEFAULT_APP_STATE: AppState = {
 };
 
 export const DEFAULT_USER: User = {
-  id: 'user_biloliddin',
-  username: 'biloliddin',
-  displayName: 'Biloliddin Akramov',
-  email: 'biloliddinakramov85@gmail.com',
+  id: 'guest_user',
+  username: 'foydalanuvchi',
+  displayName: 'Yangi Foydalanuvchi',
+  email: '',
   avatar: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=240&auto=format&fit=crop&q=80',
   role: 'user',
   status: 'active',
   joinedAt: new Date().toISOString(),
   lastLogin: new Date().toISOString(),
   lastActive: new Date().toISOString(),
-  stars: 150,
-  score: 920,
-  isPremium: true,
-  isLifetime: true,
+  stars: 0,
+  score: 0,
+  isPremium: false,
+  isLifetime: false,
   isCorporate: false,
   country: '🇺🇿'
 };
@@ -165,15 +162,15 @@ export class LifeEngineService {
             tasks,
             habits,
             sleep,
-            sleepHours: Array.isArray(parsed.sleepHours) ? pad30(parsed.sleepHours, 7.0) : DEFAULT_APP_STATE.sleepHours,
+            sleepHours: Array.isArray(parsed.sleepHours) ? pad30(parsed.sleepHours, 0) : DEFAULT_APP_STATE.sleepHours,
             sleepSchedules: Array.isArray(parsed.sleepSchedules) ? parsed.sleepSchedules : DEFAULT_APP_STATE.sleepSchedules,
             financeIncome: Array.isArray(parsed.financeIncome) ? pad30(parsed.financeIncome, 0) : DEFAULT_APP_STATE.financeIncome,
             financeExpenses: Array.isArray(parsed.financeExpenses) ? pad30(parsed.financeExpenses, 0) : DEFAULT_APP_STATE.financeExpenses,
             expenseRecords: Array.isArray(parsed.expenseRecords) ? parsed.expenseRecords : DEFAULT_APP_STATE.expenseRecords,
-            steps: Array.isArray(parsed.steps) ? pad30(parsed.steps, 7000) : DEFAULT_APP_STATE.steps,
-            water: Array.isArray(parsed.water) ? pad30(parsed.water, 1800) : DEFAULT_APP_STATE.water,
-            moods: Array.isArray(parsed.moods) ? pad30(parsed.moods, 'good') : DEFAULT_APP_STATE.moods,
-            weight: Array.isArray(parsed.weight) ? pad30(parsed.weight, 72.0) : DEFAULT_APP_STATE.weight,
+            steps: Array.isArray(parsed.steps) ? pad30(parsed.steps, 0) : DEFAULT_APP_STATE.steps,
+            water: Array.isArray(parsed.water) ? pad30(parsed.water, 0) : DEFAULT_APP_STATE.water,
+            moods: Array.isArray(parsed.moods) ? pad30(parsed.moods, 'neutral') : DEFAULT_APP_STATE.moods,
+            weight: Array.isArray(parsed.weight) ? pad30(parsed.weight, 0) : DEFAULT_APP_STATE.weight,
             challenges: Array.isArray(parsed.challenges) && parsed.challenges.length > 0 ? parsed.challenges : DEFAULT_APP_STATE.challenges,
             chartPreferences: parsed.chartPreferences || DEFAULT_APP_STATE.chartPreferences
           };
@@ -183,6 +180,15 @@ export class LifeEngineService {
       console.warn('Failed to parse local app state:', e);
     }
     return DEFAULT_APP_STATE;
+  }
+
+  // Complete reset to 0 for clean install / fresh user
+  static resetToZero(): { user: User; state: AppState } {
+    localStorage.removeItem(STORAGE_KEY_STATE);
+    localStorage.removeItem(STORAGE_KEY_USER);
+    this.saveLocalState(DEFAULT_APP_STATE);
+    this.saveLocalUser(DEFAULT_USER);
+    return { user: DEFAULT_USER, state: DEFAULT_APP_STATE };
   }
 
   static saveLocalState(state: AppState) {
